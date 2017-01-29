@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Calificar</title>
+  <!-- <script src="/socket.io/socket.io.js"></script> -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script>
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.com/en_US/messenger.Extensions.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'Messenger'));
+  </script>
+
+</head>
+<body>
+  <div id="app">
+    <div class="box" v-if="visible">
+      <div class="center">
+        Califica la institución
+      </div>
+      <div class="list" >
+        <i
+          v-for="(step, stepIndex) in steps"
+          class="fa space"
+          :class="{
+            'active fa-star': selected >= stepIndex,
+            'fa-star-o': selected < stepIndex,
+          }"
+          @click="points(stepIndex)"
+          aria-hidden="true"
+          :key="step"></i>
+      </div>
+    </div>
+
+    <div class="off" v-else>
+      <p>!Gracias por tu ayuda,</p>
+      <p>nos vemos pronto!</p>
+    </div>
+  </div>
+
+  <style media="screen">
+    #app {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .center {
+      text-align: center;
+      font-size: 60px;
+      margin-bottom: 35px;
+    }
+    .space {
+      margin: 5px;
+      font-size: 100px;
+      color: #00adc4
+    }
+    .active {
+    }
+    .off {
+      font-size: 50px;
+      text-align: center;
+    }
+    .off p {
+      margin: 0;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.min.js"></script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script type="text/javascript">
+    function getParameterByName(name, url) {
+      if (!url) {
+        url = window.location.href;
+      }
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    const url = "https://api.keen.io/3.0/projects/588d8d0b8db53dfda8a84e1f/events/rating_pro?api_key=B9C995656F90A074C333F30418B19DBD3B3BAEFE0828FB19EFBDB42BC580F860EC7F1F0791CB34ABB42FB81ABF82919DF4283251BB6D276BAA4132F7C959EC17980AC986CD39BCECC3EEB48D57FF667F792869BBD2A9DAC70CDDBC15ACB96163"
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        steps: [1, 2, 3, 4, 5],
+        selected: -1,
+        visible: true,
+        complete: false,
+        params: getParameterByName('q')
+      },
+      methods: {
+        points(index) {
+          this.selected = index
+          setTimeout(() => (this.visible = false), 1000)
+
+          const data = {
+           "value": 5,
+           "id": this.params,
+           "location": "INE",
+           "latlon": {
+           	"lat": 19.4060561,
+           	"lon": -99.1711941
+           }
+          }
+
+          axios.post(url, data).then((res) => {
+            if ('created' in res.data) {
+              this.complete = res.data.created
+            }
+          })
+        }
+      }
+    })
+  </script>
+</body>
+</html>
